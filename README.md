@@ -26,7 +26,12 @@ Prerequsite: install node from v8 since it uses `async/wait` and many recent
 
 ```shell
     npm install
-    node bin/event-transaction --file pathtothefile.csv
+```
+
+#### EventUpload.
+
+```shell
+  node bin/event-transaction --file pathtothefile.csv
 ```
 
 The structure of the `pathtothefile.csv` should be like this. It uses id so as
@@ -34,4 +39,17 @@ to reduce amount of time it takes to import single event.
 
 ```csv
 storedby,status,executiondate,organisationunitid,programinstanceid,attributeoptioncomboid,programstageid,completedby,completeddate,dataElementid...
+```
+
+#### Tei Delete
+
+```shell
+  node bin/tei-delete --file pathtothefile.csv
+```
+
+The structure of the `pathtothefile.csv` should be like this. It uses id so as
+to reduce amount of time it takes to import single event.
+
+```csv
+  trackedentityinstanceid
 ```
