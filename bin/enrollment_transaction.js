@@ -21,7 +21,7 @@ const enrollmentTranscation = async(teiValues, teiAttributeValues, programInstan
   const getNextIDQuery = `SELECT nextval('hibernate_sequence')`;
   const insertTeiQuery = `INSERT INTO trackedentityinstance(organisationunitid,trackedentityid,lastupdatedby,uid,inactive,trackedentityinstanceid,created,lastupdated,deleted,createdatclient,lastupdatedatclient) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`;
   const insertTeiAttributesValuesQuery = `INSERT INTO trackedentityattributevalue(trackedentityattributeid,value,trackedentityinstanceid,created,lastupdated) VALUES ($1,$2,$3,$4,$5)`;
-  const insertPrInstanceQuery = `INSERT INTO programinstance(uid,programid,organisationunitid,status,trackedentityinstanceid,programinstanceid,created,lastupdated,incidentdate,enrollmentdate,deleted,createdatclient,lastupdatedatclient) VALUES ($1,$2,$3,$4,$5,$6,$7)`;
+  const insertPrInstanceQuery = `INSERT INTO programinstance(programid,organisationunitid,uid,status,trackedentityinstanceid,programinstanceid,created,lastupdated,incidentdate,enrollmentdate,deleted,createdatclient,lastupdatedatclient) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`;
 
   try {
     await client.query('BEGIN');
@@ -122,7 +122,7 @@ const trackedEntityObject = trackedEntityEnrollments => {
 
 
       // Here pass the value to the event-transaction
-      const eventEntered = enrollTei(
+      enrollTei(
         programTei.teiValues,
         programTei.teiAttributeValues,
         programTei.programInstanceValues,
