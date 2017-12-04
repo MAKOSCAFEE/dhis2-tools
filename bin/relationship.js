@@ -1,9 +1,18 @@
-const { pool } = require('./connection');
+const {
+  pool
+} = require('./connection');
 const moment = require('moment');
-const { generateCodes, generateCode } = require('dhis2-uid');
-const { convertCsvToJson } = require('./configManager');
+const {
+  generateCodes,
+  generateCode
+} = require('dhis2-uid');
+const {
+  convertCsvToJson
+} = require('./configManager');
 const _ = require('lodash');
-const { mapSeries } = require('async');
+const {
+  mapSeries
+} = require('async');
 
 let event_entered = 0;
 const relationshipTranscation = async relationshipValues => {
@@ -11,7 +20,7 @@ const relationshipTranscation = async relationshipValues => {
   // we don't need to dispose of the client (it will be undefined)
   const client = await pool.connect();
   const getRelationshipIDQuery = `SELECT nextval('hibernate_sequence')`;
-  const insertRelationshipQuery = `INSERT INTO relationship(trackedentityinstanceaid,relationshiptypeid,trackedentityinstancebid,relationshipid) VALUES ($1,$2,$3,$4)`;
+  const insertRelationshipQuery = `INSERT INTO relationship(trackedentityinstanceaid,trackedentityinstancebid,relationshiptypeid,relationshipid) VALUES ($1,$2,$3,$4)`;
 
   try {
     await client.query('BEGIN');
@@ -42,12 +51,21 @@ const postRelationship = (relationshipValues, callBackFn) => {
       callBackFn(e, e.stack);
     });
 };
-
+const relatioshipValueKeys = [
+  'trackedEntityInstanceA',
+  'trackedEntityInstanceB',
+  'relationshiptypeID'
+]
 const relationshipObject = relationships => {
   mapSeries(
     relationships,
     (relationship, callBackFn) => {
-      postRelationship(relationship, callBackFn);
+      let relationshipValues = [];
+      _.forEach(relatioshipValueKeys, rkey => {
+        relationshipValues.push(relationship[rkey]);
+      });
+
+      postRelationship(relationshipValues, callBackFn);
     },
     (err, results) => {
       console.info('=====Summary=======');
