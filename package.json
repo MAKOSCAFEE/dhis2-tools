@@ -6,7 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["dhis2", "tracker", "events", "import-export", "psql"],
+  "keywords": [
+    "dhis2",
+    "tracker",
+    "events",
+    "import-export",
+    "psql"
+  ],
   "author": "barnabasmakonda",
   "license": "MIT",
   "dependencies": {
@@ -14,7 +20,7 @@
     "csvtojson": "^1.1.9",
     "dhis2-uid": "^0.1.2",
     "lodash": "^4.17.4",
-    "moment": "^2.19.2",
+    "moment": "^2.19.3",
     "pg": "^7.4.0",
     "prettyjson": "^1.2.1",
     "yargs": "^10.0.3"
