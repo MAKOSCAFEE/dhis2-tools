@@ -1,6 +1,6 @@
 const { pool } = require("./connection");
 const { convertCsvToJson } = require("./configManager");
-const { mapSeries } = require("async");
+const { mapLimit } = require("async");
 
 let teiDeleted = 0;
 const deleteTeiTransaction = async teID => {
@@ -50,6 +50,7 @@ const deleteTei = (teID, callBackFn) => {
   deleteTeiTransaction(teID)
     .then(value => {
       teiDeleted++;
+      console.log("The TrackedEntityIsntance successfully: ", teiDeleted);
       callBackFn(null, value);
     })
     .catch(e => {
@@ -59,8 +60,9 @@ const deleteTei = (teID, callBackFn) => {
 };
 
 const run = teIDs => {
-  mapSeries(
+  mapLimit(
     teIDs,
+    50,
     (teID, callBackFn) => {
       deleteTei(teID["trackedentityinstanceid"], callBackFn);
     },
