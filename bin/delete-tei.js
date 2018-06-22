@@ -15,7 +15,7 @@ const deleteTeiTransaction = async teID => {
     `DELETE FROM trackedentitydatavalue teidv WHERE teidv.programstageinstanceid = ${prStageId}`;
   const getProgramInstance = `SELECT programinstanceid FROM programinstance where trackedentityinstanceid = ${teID}`;
   const deletePrStagevalueaudit = prStageInstanceId =>
-    `DELETE FROM trackedentityattributevalueaudit WHERE programstageinstanceid = ${prStageInstanceId}`;
+    `DELETE FROM trackedentitydatavalueaudit WHERE programstageinstanceid = ${prStageInstanceId}`;
   const deleteTei = `DELETE FROM trackedentityinstance where trackedentityinstanceid = ${teID}`;
 
   try {
