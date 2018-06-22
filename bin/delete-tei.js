@@ -7,7 +7,6 @@ const deleteTeiTransaction = async teID => {
   // note: we don't try/catch this because if connecting throws an exception
   // we don't need to dispose of the client (it will be undefined)
   const client = await pool.connect();
-  const deleteTeiAttributeValue = `DELETE FROM trackedentityattributevalue where trackedentityinstanceid = ${teID}`;
   const getProgramStageInstances = prinstanceid =>
     `SELECT programstageinstanceid FROM programstageinstance WHERE programinstanceid =${prinstanceid}`;
   const deleteProgramStageInstance = prinstanceid =>
@@ -15,8 +14,8 @@ const deleteTeiTransaction = async teID => {
   const deleteTrackedEntityDataValue = prStageId =>
     `DELETE FROM trackedentitydatavalue teidv WHERE teidv.programstageinstanceid = ${prStageId}`;
   const getProgramInstance = `SELECT programinstanceid FROM programinstance where trackedentityinstanceid = ${teID}`;
-  const deleteProgramInstance = `DELETE FROM programinstance where trackedentityinstanceid = ${teID}`;
-  const deleteRelationship = `DELETE FROM relationship WHERE trackedentityinstanceaid= ${teID} OR trackedentityinstancebid =${teID}`;
+  const deletePrStagevalueaudit = prStageInstanceId =>
+    `DELETE FROM trackedentityattributevalueaudit WHERE programstageinstanceid = ${prStageInstanceId}`;
   const deleteTei = `DELETE FROM trackedentityinstance where trackedentityinstanceid = ${teID}`;
 
   try {
@@ -30,12 +29,11 @@ const deleteTeiTransaction = async teID => {
       for (const row of programStageInstances) {
         const prStageId = row.programstageinstanceid;
         await client.query(deleteTrackedEntityDataValue(prStageId));
+        await client.query(deletePrStagevalueaudit(prStageId));
       }
       await client.query(deleteProgramStageInstance(prinstanceid));
     }
-    await client.query(deleteTeiAttributeValue);
-    await client.query(deleteProgramInstance);
-    await client.query(deleteRelationship);
+    await deleteTeiRelatedQueries(client, teID);
     await client.query(deleteTei);
     await client.query("COMMIT");
   } catch (e) {
@@ -44,6 +42,19 @@ const deleteTeiTransaction = async teID => {
   } finally {
     client.release();
   }
+};
+
+const deleteTeiRelatedQueries = async (client, teID) => {
+  const deleteTeiAttributeValue = `DELETE FROM trackedentityattributevalue where trackedentityinstanceid = ${teID}`;
+  const deleteProgramInstance = `DELETE FROM programinstance where trackedentityinstanceid = ${teID}`;
+  const deleteRelationship = `DELETE FROM relationship WHERE trackedentityinstanceaid= ${teID} OR trackedentityinstancebid =${teID}`;
+  const deletetrackedentityattributevalueaudit = `DELETE FROM trackedentityattributevalueaudit WHERE trackedentityinstanceid = ${teID}`;
+  return (
+    client.query(deleteTeiAttributeValue),
+    client.query(deleteProgramInstance),
+    client.query(deleteRelationship),
+    client.query(deletetrackedentityattributevalueaudit)
+  );
 };
 
 const deleteTei = (teID, callBackFn) => {
