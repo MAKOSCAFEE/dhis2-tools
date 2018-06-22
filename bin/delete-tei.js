@@ -1,6 +1,6 @@
 const { pool } = require("./connection");
 const { convertCsvToJson } = require("./configManager");
-const { mapLimit } = require("async");
+const { parallelLimit } = require("async");
 
 let teiDeleted = 0;
 const deleteTeiTransaction = async teID => {
@@ -71,12 +71,14 @@ const deleteTei = (teID, callBackFn) => {
 };
 
 const run = teIDs => {
-  mapLimit(
-    teIDs,
+  parallelLimit(
+    teIDs.map(
+      ({ trackedentityinstanceid }) =>
+        function(callBackFn) {
+          return deleteTei(trackedentityinstanceid, callBackFn);
+        }
+    ),
     50,
-    (teID, callBackFn) => {
-      deleteTei(teID["trackedentityinstanceid"], callBackFn);
-    },
     (error, results) => {
       if (error) {
         console.log(error);
