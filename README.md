@@ -48,7 +48,7 @@ storedby,status,executiondate,organisationunitid,programinstanceid,attributeopti
 ```
 
 The structure of the `pathtothefile.csv` should be like this. It uses id so as
-to reduce amount of time it takes to import single event.
+to reduce amount of time it takes to delete trackedentityinstance.
 
 ```csv
   trackedentityinstanceid

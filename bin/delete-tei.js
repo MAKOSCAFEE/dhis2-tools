@@ -19,8 +19,6 @@ const deleteTeiTransaction = async teID => {
   const deleteRelationship = `DELETE FROM relationship WHERE trackedentityinstanceaid= ${teID} OR trackedentityinstancebid =${teID}`;
   const deleteTei = `DELETE FROM trackedentityinstance where trackedentityinstanceid = ${teID}`;
 
-  //console.log(deleteTeiAttributeValue);
-
   try {
     await client.query("BEGIN");
     const { rows: programinstances } = await client.query(getProgramInstance);
