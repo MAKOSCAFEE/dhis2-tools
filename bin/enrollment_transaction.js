@@ -3,7 +3,7 @@ const moment = require("moment");
 const { generateCode } = require("dhis2-uid");
 const { convertCsvToJson } = require("./configManager");
 const _ = require("lodash");
-const { mapSeries } = require("async");
+const { parallelLimit } = require("async");
 
 let tei_entered = 0;
 const enrollmentTranscation = async (
@@ -98,50 +98,57 @@ const programInstanceValueKeys = [
 
 let noOfEventEntered = 0;
 let noOfEventErrored = 0;
-const trackedEntityObject = trackedEntityEnrollments => {
-  mapSeries(
-    trackedEntityEnrollments,
-    (csvTeiEnrollment, callBackFn) => {
-      let programTei = {
-        teiValues: [],
-        teiAttributeValues: [],
-        programInstanceValues: []
-      };
-      // organisationunitid,trackedentityid,lastupdateby, uid
-      _.forEach(trackedEntityInstanceValueKeys, pkey => {
-        programTei.teiValues.push(csvTeiEnrollment[pkey]);
-      });
-      //inactive
-      programTei.teiValues.push(false);
-      Object.keys(csvTeiEnrollment).forEach((key, indx) => {
-        if (!csvTeiEnrollment[key] || csvTeiEnrollment[key] == "") {
-          return;
-        }
-        if (
-          trackedEntityInstanceValueKeys.indexOf(key) == -1 &&
-          programInstanceValueKeys.indexOf(key) == -1
-        ) {
-          let teiAttributeEntry = [];
-          //trackedentityattributeid,value
-          teiAttributeEntry.push(...[key, csvTeiEnrollment[key]]);
-          programTei.teiAttributeValues.push(teiAttributeEntry);
-        }
-      });
-      //programid,organisationunitid,incidentdate,enrollmentdate
-      _.forEach(programInstanceValueKeys, pkey => {
-        programTei.programInstanceValues.push(csvTeiEnrollment[pkey]);
-      });
-      //uid
-      programTei.programInstanceValues.push(...[generateCode()]);
+const enrollmentFunction = (csvTeiEnrollment, callBackFn) => {
+  let programTei = {
+    teiValues: [],
+    teiAttributeValues: [],
+    programInstanceValues: []
+  };
+  // organisationunitid,trackedentityid,lastupdateby, uid
+  _.forEach(trackedEntityInstanceValueKeys, pkey => {
+    programTei.teiValues.push(csvTeiEnrollment[pkey]);
+  });
+  //inactive
+  programTei.teiValues.push(false);
+  Object.keys(csvTeiEnrollment).forEach((key, indx) => {
+    if (!csvTeiEnrollment[key] || csvTeiEnrollment[key] == "") {
+      return;
+    }
+    if (
+      trackedEntityInstanceValueKeys.indexOf(key) == -1 &&
+      programInstanceValueKeys.indexOf(key) == -1
+    ) {
+      let teiAttributeEntry = [];
+      //trackedentityattributeid,value
+      teiAttributeEntry.push(...[key, csvTeiEnrollment[key]]);
+      programTei.teiAttributeValues.push(teiAttributeEntry);
+    }
+  });
+  //programid,organisationunitid,incidentdate,enrollmentdate
+  _.forEach(programInstanceValueKeys, pkey => {
+    programTei.programInstanceValues.push(csvTeiEnrollment[pkey]);
+  });
+  //uid
+  programTei.programInstanceValues.push(...[generateCode()]);
 
-      // Here pass the value to the event-transaction
-      enrollTei(
-        programTei.teiValues,
-        programTei.teiAttributeValues,
-        programTei.programInstanceValues,
-        callBackFn
-      );
-    },
+  // Here pass the value to the event-transaction
+  enrollTei(
+    programTei.teiValues,
+    programTei.teiAttributeValues,
+    programTei.programInstanceValues,
+    callBackFn
+  );
+};
+
+const trackedEntityObject = trackedEntityEnrollments => {
+  parallelLimit(
+    trackedEntityEnrollments.map(
+      csvTeiEnrollment =>
+        function(callBackFn) {
+          return enrollmentFunction(csvTeiEnrollment, callBackFn);
+        }
+    ),
+    500,
     (err, results) => {
       console.info("=====Summary=======");
       console.info(
