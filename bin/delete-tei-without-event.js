@@ -7,6 +7,7 @@ const deleteTeiTransaction = async teID => {
   // note: we don't try/catch this because if connecting throws an exception
   // we don't need to dispose of the client (it will be undefined)
   const client = await pool.connect();
+  const deleteTei = `DELETE FROM trackedentityinstance where trackedentityinstanceid = ${teID}`;
   try {
     await client.query("BEGIN");
     await deleteTeiRelatedQueries(client, teID);
@@ -37,7 +38,10 @@ const deleteTei = (teID, callBackFn) => {
   deleteTeiTransaction(teID)
     .then(value => {
       teiDeleted++;
-      console.log("The TrackedEntityIsntance successfully: ", teiDeleted);
+      console.log(
+        "The TrackedEntityIsntance deleted successfully: ",
+        teiDeleted
+      );
       callBackFn(null, value);
     })
     .catch(e => {
@@ -54,7 +58,7 @@ const run = teIDs => {
           return deleteTei(trackedentityinstanceid, callBackFn);
         }
     ),
-    50,
+    200,
     (error, results) => {
       if (error) {
         console.log(error);
