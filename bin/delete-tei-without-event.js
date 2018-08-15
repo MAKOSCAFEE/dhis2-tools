@@ -58,7 +58,7 @@ const run = teIDs => {
           return deleteTei(trackedentityinstanceid, callBackFn);
         }
     ),
-    200,
+    50,
     (error, results) => {
       if (error) {
         console.log(error);
