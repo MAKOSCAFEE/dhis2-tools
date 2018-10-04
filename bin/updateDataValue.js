@@ -8,7 +8,7 @@ const updateDataValueTransaction = async ({
   trackedentityattributeid,
   value
 }) => {
-  const sqlStatement = `UPDATE trackedentityattributevalue SET value =${value} WHERE trackedentityattributeid=22863 and trackedentityinstanceid =${trackedentityinstanceid} and trackedentityattributeid =${trackedentityattributeid};`;
+  const sqlStatement = `UPDATE trackedentityattributevalue SET value ='${value}' WHERE trackedentityattributeid=22863 and trackedentityinstanceid =${trackedentityinstanceid} and trackedentityattributeid =${trackedentityattributeid};`;
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
