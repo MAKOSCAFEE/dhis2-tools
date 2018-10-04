@@ -50,7 +50,7 @@ const dataValueObject = async dataValues => {
       }
       console.info("=====Summary=======");
       console.info(
-        "Number of TrackedEntity deleted Successfully: ",
+        "Number of datavalue updated Successfully: ",
         results.length
       );
       console.info("Number of TrackedEntity errored: ", error);
