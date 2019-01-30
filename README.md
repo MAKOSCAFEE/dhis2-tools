@@ -53,3 +53,16 @@ to reduce amount of time it takes to delete trackedentityinstance.
 ```csv
   trackedentityinstanceid
 ```
+
+#### Location update
+
+```shell
+  node bin/updateLocationTei --file pathtothefile.csv
+```
+
+The structure of the `pathtothefile.csv` should be like this. It uses id so as
+to reduce amount of time it takes to delete trackedentityinstance.
+
+```csv
+  trackedentityinstanceid,organisationunitid
+```
