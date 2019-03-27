@@ -15,7 +15,7 @@ const enrollmentTranscation = async (
   // we don't need to dispose of the client (it will be undefined)
   const client = await pool.connect();
   const getNextIDQuery = `SELECT nextval('hibernate_sequence')`;
-  const insertTeiQuery = `INSERT INTO trackedentityinstance(organisationunitid,trackedentityid,lastupdatedby,uid,inactive,trackedentityinstanceid,created,lastupdated,deleted,createdatclient,lastupdatedatclient) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`;
+  const insertTeiQuery = `INSERT INTO trackedentityinstance(organisationunitid,trackedentitytypeid,lastupdatedby,uid,inactive,trackedentityinstanceid,created,lastupdated,deleted,createdatclient,lastupdatedatclient) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`;
   const insertTeiAttributesValuesQuery = `INSERT INTO trackedentityattributevalue(trackedentityattributeid,value,trackedentityinstanceid,created,lastupdated) VALUES ($1,$2,$3,$4,$5)`;
   const insertPrInstanceQuery = `INSERT INTO programinstance(programid,organisationunitid,incidentdate,enrollmentdate,status,uid,trackedentityinstanceid,programinstanceid,created,lastupdated,deleted,createdatclient,lastupdatedatclient) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`;
 
