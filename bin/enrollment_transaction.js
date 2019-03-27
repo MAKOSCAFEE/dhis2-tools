@@ -148,7 +148,7 @@ const trackedEntityObject = trackedEntityEnrollments => {
           return enrollmentFunction(csvTeiEnrollment, callBackFn);
         }
     ),
-    500,
+    5,
     (err, results) => {
       console.info("=====Summary=======");
       console.info(

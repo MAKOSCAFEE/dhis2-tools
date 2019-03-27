@@ -47,15 +47,17 @@ const deleteTeiTransaction = async teID => {
 const deleteTeiRelatedQueries = async (client, teID) => {
   const deleteTeiAttributeValue = `DELETE FROM trackedentityattributevalue where trackedentityinstanceid = ${teID}`;
   const deleteProgramInstance = `DELETE FROM programinstance where trackedentityinstanceid = ${teID}`;
-  const deleteRelationship = `DELETE FROM relationship WHERE trackedentityinstanceaid= ${teID} OR trackedentityinstancebid =${teID}`;
+  const deleteRelationship = `DELETE FROM relationship WHERE from_relationshipitemid= ${teID} OR to_relationshipitemid =${teID}`;
   const deletetrackedentityattributevalueaudit = `DELETE FROM trackedentityattributevalueaudit WHERE trackedentityinstanceid = ${teID}`;
-  const deletePrograminstanceAudit = `DELETE FROM programinstanceaudit WHERE programinstanceid = (SELECT programinstanceid programinstance where trackedentityinstanceid = ${teID})`;
+  const deletePrograminstanceAudit = `DELETE FROM programinstanceaudit WHERE programinstanceid = (SELECT programinstanceid FROM programinstance where trackedentityinstanceid = ${teID})`;
+  const deleteProgramOwner = `DELETE FROM trackedentityprogramowner where trackedentityinstanceid = ${teID}`;
   return (
     client.query(deleteTeiAttributeValue),
     client.query(deletePrograminstanceAudit),
     client.query(deleteProgramInstance),
     client.query(deleteRelationship),
-    client.query(deletetrackedentityattributevalueaudit)
+    client.query(deletetrackedentityattributevalueaudit),
+    client.query(deleteProgramOwner)
   );
 };
 
