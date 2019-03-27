@@ -9,12 +9,18 @@ const deleteTeiTransaction = async teID => {
   const client = await pool.connect();
   const getProgramStageInstances = prinstanceid =>
     `SELECT programstageinstanceid FROM programstageinstance WHERE programinstanceid =${prinstanceid}`;
+  const deletePrograminstanceAudit = prinstanceid =>
+    `DELETE FROM programinstanceaudit WHERE programinstanceid = ${prinstanceid}`;
   const deleteProgramStageInstance = prinstanceid =>
     `DELETE FROM programstageinstance WHERE programinstanceid =${prinstanceid}`;
   const deleteTrackedEntityDataValue = prStageId =>
     `DELETE FROM trackedentitydatavalue teidv WHERE teidv.programstageinstanceid = ${prStageId}`;
   const getProgramInstance = `SELECT programinstanceid FROM programinstance where trackedentityinstanceid = ${teID}`;
   const deletePrStagevalueaudit = prStageInstanceId =>
+    `DELETE FROM programstageinstancecomments WHERE programstageinstanceid = ${prStageInstanceId}`;
+  const deleteProgramStageComments = prStageInstanceId =>
+    `DELETE FROM programstageinstancecomments WHERE programstageinstanceid = ${prStageInstanceId}`;
+  const deleteProgramDataValue = prStageInstanceId =>
     `DELETE FROM trackedentitydatavalueaudit WHERE programstageinstanceid = ${prStageInstanceId}`;
   const deleteTei = `DELETE FROM trackedentityinstance where trackedentityinstanceid = ${teID}`;
 
@@ -23,6 +29,7 @@ const deleteTeiTransaction = async teID => {
     const { rows: programinstances } = await client.query(getProgramInstance);
     for (const prinstance of programinstances) {
       const prinstanceid = prinstance.programinstanceid;
+      await client.query(deletePrograminstanceAudit(prinstanceid));
       const { rows: programStageInstances } = await client.query(
         getProgramStageInstances(prinstanceid)
       );
@@ -30,6 +37,8 @@ const deleteTeiTransaction = async teID => {
         const prStageId = row.programstageinstanceid;
         await client.query(deleteTrackedEntityDataValue(prStageId));
         await client.query(deletePrStagevalueaudit(prStageId));
+        await client.query(deleteProgramStageComments(prStageId));
+        await client.query(deleteProgramDataValue(prStageId));
       }
       await client.query(deleteProgramStageInstance(prinstanceid));
     }
@@ -49,14 +58,12 @@ const deleteTeiRelatedQueries = async (client, teID) => {
   const deleteProgramInstance = `DELETE FROM programinstance where trackedentityinstanceid = ${teID}`;
   const deleteRelationship = `DELETE FROM relationship WHERE from_relationshipitemid= ${teID} OR to_relationshipitemid =${teID}`;
   const deletetrackedentityattributevalueaudit = `DELETE FROM trackedentityattributevalueaudit WHERE trackedentityinstanceid = ${teID}`;
-  const deletePrograminstanceAudit = `DELETE FROM programinstanceaudit WHERE programinstanceid = (SELECT programinstanceid FROM programinstance where trackedentityinstanceid = ${teID})`;
   const deleteProgramOwner = `DELETE FROM trackedentityprogramowner where trackedentityinstanceid = ${teID}`;
   return (
     client.query(deleteTeiAttributeValue),
-    client.query(deletePrograminstanceAudit),
     client.query(deleteProgramInstance),
-    client.query(deleteRelationship),
     client.query(deletetrackedentityattributevalueaudit),
+    client.query(deleteRelationship),
     client.query(deleteProgramOwner)
   );
 };
@@ -82,7 +89,7 @@ const run = teIDs => {
           return deleteTei(trackedentityinstanceid, callBackFn);
         }
     ),
-    50,
+    1,
     (error, results) => {
       if (error) {
         console.log(error);

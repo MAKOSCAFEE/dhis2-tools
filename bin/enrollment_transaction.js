@@ -9,7 +9,8 @@ let tei_entered = 0;
 const enrollmentTranscation = async (
   teiValues,
   teiAttributeValues,
-  programInstanceValues
+  programInstanceValues,
+  programOwnerValues
 ) => {
   // note: we don't try/catch this because if connecting throws an exception
   // we don't need to dispose of the client (it will be undefined)
@@ -18,6 +19,7 @@ const enrollmentTranscation = async (
   const insertTeiQuery = `INSERT INTO trackedentityinstance(organisationunitid,trackedentitytypeid,lastupdatedby,uid,inactive,trackedentityinstanceid,created,lastupdated,deleted,createdatclient,lastupdatedatclient) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`;
   const insertTeiAttributesValuesQuery = `INSERT INTO trackedentityattributevalue(trackedentityattributeid,value,trackedentityinstanceid,created,lastupdated) VALUES ($1,$2,$3,$4,$5)`;
   const insertPrInstanceQuery = `INSERT INTO programinstance(programid,organisationunitid,incidentdate,enrollmentdate,status,uid,trackedentityinstanceid,programinstanceid,created,lastupdated,deleted,createdatclient,lastupdatedatclient) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`;
+  const insertPrOwnerQuery = `INSERT INTO trackedentityprogramowner(programid,organisationunitid,createdby,created,lastupdated,trackedentityprogramownerid,trackedentityinstanceid) VALUES ($1,$2,$3,$4,$5,$6,$7)`;
 
   try {
     await client.query("BEGIN");
@@ -30,6 +32,16 @@ const enrollmentTranscation = async (
       false,
       moment().format("YYYY-MM-DD HH:mm:ss.SSS"),
       moment().format("YYYY-MM-DD HH:mm:ss.SSS")
+    ]);
+
+    const ownerIdRows = await client.query(getNextIDQuery);
+
+    await client.query(insertPrOwnerQuery, [
+      ...programOwnerValues,
+      moment().format("YYYY-MM-DD HH:mm:ss.SSS"),
+      moment().format("YYYY-MM-DD HH:mm:ss.SSS"),
+      ownerIdRows.rows[0].nextval,
+      teiIdRows.rows[0].nextval
     ]);
 
     for (const teiAttributeValue of teiAttributeValues) {
@@ -68,9 +80,15 @@ const enrollTei = (
   teiValues,
   teiAttributeValues,
   programInstanceValues,
+  programOwnerValues,
   callBackFn
 ) => {
-  enrollmentTranscation(teiValues, teiAttributeValues, programInstanceValues)
+  enrollmentTranscation(
+    teiValues,
+    teiAttributeValues,
+    programInstanceValues,
+    programOwnerValues
+  )
     .then(value => {
       tei_entered++;
       console.log("The event Entered successfully: ", tei_entered);
@@ -95,6 +113,7 @@ const programInstanceValueKeys = [
   "enrollmentdate",
   "status"
 ];
+const programOwnerKeys = ["programid", "organisationunitid", "lastupdatedby"];
 
 let noOfEventEntered = 0;
 let noOfEventErrored = 0;
@@ -102,11 +121,16 @@ const enrollmentFunction = (csvTeiEnrollment, callBackFn) => {
   let programTei = {
     teiValues: [],
     teiAttributeValues: [],
-    programInstanceValues: []
+    programInstanceValues: [],
+    programOwnerValue: []
   };
   // organisationunitid,trackedentityid,lastupdateby, uid
   _.forEach(trackedEntityInstanceValueKeys, pkey => {
     programTei.teiValues.push(csvTeiEnrollment[pkey]);
+  });
+
+  _.forEach(programOwnerKeys, poKey => {
+    programTei.programOwnerValue.push(csvTeiEnrollment[poKey]);
   });
   //inactive
   programTei.teiValues.push(false);
@@ -136,6 +160,7 @@ const enrollmentFunction = (csvTeiEnrollment, callBackFn) => {
     programTei.teiValues,
     programTei.teiAttributeValues,
     programTei.programInstanceValues,
+    programTei.programOwnerValue,
     callBackFn
   );
 };
