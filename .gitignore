@@ -1,4 +1,5 @@
 node_modules/
+*.csv
 bin/env.json
 .DS_Store
 *.sql
